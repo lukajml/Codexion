@@ -19,4 +19,33 @@
 
 - ### Coder nb 1 sits next to coder nb number_of_coders, any other coder nb sits between coder nb N - 1 and coder nb N +1.
 
-- ### 
+- ### About the logs:
+  - Any state change of a coder must be formatted as follows:
+    - timestamp_in_ms X has taken a dongle
+    - timestamp_in_ms X is compiling
+    - timestamp_in_ms X is debugging
+    - timestamp_in_ms X is refactoring
+    - timestamp_in_ms X burned out
+  
+  - a displayed state message should not be mixed up with another message
+  - a message announcing that a coder burned out should be displayed no more than 10 ms after the burnout
+  - coders should avoid burning out!
+
+## Arguments 
+
+number_of_coders, time_to_burnout, time_to_compile,
+time_to_debug, time_to_refactor, number_of_compiles_required,
+dongle_cooldown, scheduler
+
+## External Functions
+
+pthread_create, pthread_join, pthread_mutex_init, pthread_mutex_lock,
+pthread_mutex_unlock, pthread_mutex_destroy, pthread_cond_init,
+pthread_cond_wait, pthread_cond_timedwait, pthread_cond_signal,
+pthread_cond_broadcast, pthread_cond_destroy, gettimeofday, clock_gettime,
+usleep, write, malloc, free, printf, fprintf, strcmp,
+strlen, atoi, memset
+
+## Description
+
+Coders with threads and mutexes (C)
