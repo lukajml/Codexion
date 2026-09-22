@@ -49,3 +49,15 @@ strlen, atoi, memset
 ## Description
 
 Coders with threads and mutexes (C)
+
+## Specific rules
+
+- Each coder must be represented by a thread using pthread_create
+- There is one dongle for each pair of coders, if there are several coders, each coder should have a dongle to their left and their right. If there is only one coder there should be on one dongle.
+- To prevent duplicating dongles, they need to be protected with a mutex, pthread_mutex_t. A condition variable, pthread_cond_t, may be used to manage waiting queues.
+- Dongle cooldown is mandatory.
+- Fair arbitration is mandatory, when multiple coders request the same dongle, the scheduler must grant access according to the fifo or edf.
+- The program should garantee liveness, no coder should be starved of dongles and burn out under edf scheduling, provided the parameters are feasible.
+- A seperated monitor thread must detect burnout precisely and stop the simulation.
+- Logging must be serialized so that two messages never interleave on a single line, use a mutex to protect output.
+- The simulation stop either when a coder burns out or when every coder has compiled
