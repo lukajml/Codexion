@@ -1,3 +1,4 @@
+https://embeddedprep.com/pthreads-tutorial/
 # What are threads?
 
 it's like running several tasks at once, threads are mini programs inside a single process that let you multitask.
