@@ -1,12 +1,15 @@
+NAME = codexion
 CC = cc
+HEADER_DIR = headers
+SRC_DIR = srcs
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -pthread -I$(HEADER_DIR)
 
-SRC =
+SRC = 	$(addprefix $(SRC_DIR)/,\
+		parsing.c \
+		main.c)
 
 OBJ = $(SRC:.c=.o)
-
-NAME = codexion
 
 REMOVE = rm -f
 
@@ -22,3 +25,5 @@ fclean: clean
 	$(REMOVE) $(NAME)
 
 re: fclean all
+
+.PHONY = all clean fclean re

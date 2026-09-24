@@ -1,28 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   codexion.h                                         :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/24 13:56:14 by lulauren          #+#    #+#             */
-/*   Updated: 2026/09/24 17:31:55 by lulauren         ###   ########.fr       */
+/*   Created: 2026/09/24 17:46:03 by lulauren          #+#    #+#             */
+/*   Updated: 2026/09/24 17:46:08 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <pthread.h>
-#include <stdio.h>
-#include <unistd.h>
+#include "../headers/codexion.h"
 
-#ifndef CODEXION_H
-# define CODEXION_H
-
-//parsing.c
-int	parser(int ac, char **av);
-int	check_all_nums(int ac, char **av);
-int	is_valid_numeric(char *str);
-
-
-
-
-#endif
+int	main(int ac, char **av)
+{
+	if (!parser(ac, av))
+		return (1);
+}
