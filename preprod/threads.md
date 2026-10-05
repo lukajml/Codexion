@@ -41,3 +41,6 @@ int main()
 
  - pthread_create(...) creates a thread and runs myThreadFunction in it.
  - pthread_join(...) waits until the thread finishes.
+
+## pthread_create
+
