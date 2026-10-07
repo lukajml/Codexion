@@ -72,3 +72,6 @@ If one thread has locked a region of the code using a mutex and is excuting that
 Each coder needs to be a thread and all data needs to pass to the routine functions, so structures are the best option.
 The program structure contains the all the coders (in an array), mutex, a burnout flag and the coder structure.
 The coder structure contains all the general data, mutex pointers for the dongle, mutex pointers that point to the mutex program structure and a burnout pointer that points to the burnout flag in the program structure.
+
+# Resources
+https://medium.com/@ruinadd/philosophers-42-guide-the-dining-philosophers-problem-893a24bc0fe2

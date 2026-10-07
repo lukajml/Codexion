@@ -16,31 +16,46 @@
 # include <stdio.h>
 # include <unistd.h>
 
+typedef struct s_heap_node
+{
+	long long	priority;
+	int			coder_id;
+}				t_heap_node;
+
+typedef struct s_heap
+{
+	t_heap_node	*data;
+	int			capacity;
+	int			size;
+}				t_heap;
+
+typedef struct s_dongle
+{
+	pthread_mutex_t mutex;
+	pthread_cond_t	cond;
+	long long		last_released_time;
+	t_heap			queue;
+}				t_dongle;
+
 typedef struct s_coder
 {
-	pthread_t		thread;
+	pthread_t		thread_id;
 	int				id;
-	int				compiling;
-	int				compiles;
-	int				nb_of_coders;
-	int				*burned_out;
-	size_t			time_to_burnout;
-	size_t			time_to_compile;
-	size_t			time_to_debug;
-	size_t			time_to_refactor;
-	phtread_mutex_t	*r_dongle;
-	phtread_mutex_t	*l_dongle;
-	phtread_mutex_t	*burnout_lock;
-	phtread_mutex_t	*compile_lock;
+	int				nb_of_compiles;
+	long long		last_compile_start;
+	t_dongle		*right_dongle;
+	t_dongle		*left_dongle;
+	struct s_data	*global_data;
 }				t_coder;
 
-typedef struct s_program
+typedef struct s_data
 {
-	int				burnout_flag;
-	phtread_mutex_t	*burnout_lock;
-	phtread_mutex_t	*compile_lock;
-	t_coder			*coders;
-}				t_program;
+	int				nb_of_coders;
+	long long		time_to_burnout;
+	long long		time_to_compile;
+	long long		time_to_debug;
+	long long		time_to_refactor;
+}				t_data;
 
 //parsing.c
 int	parser(int ac, char **av);

@@ -1,0 +1,632 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Codexion - C implementation</title><style>
+:root{--bg:#f6f7f9;--fg:#1b2430;--mut:#5b6675;--card:#fff;--code:#0f1720;--cf:#d8e2ee;--ln:#d5dbe3;--ac:#0b7285}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e4e9f0;--mut:#9aa6b6;--card:#171e28;--code:#0a0e13;--cf:#d8e2ee;--ln:#2a3340;--ac:#4fc3d9}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Georgia,"Times New Roman",serif}
+main{max-width:860px;margin:0 auto;padding:2rem 1rem 4rem}
+h1{font-size:2rem;margin:.2rem 0}h2{font-size:1.2rem;margin:2.2rem 0 .3rem;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--ac)}
+p{max-width:70ch}.mut{color:var(--mut)}
+pre{background:var(--code);color:var(--cf);padding:1rem;border-radius:6px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;tab-size:4}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+table{border-collapse:collapse;width:100%;background:var(--card)}td{border:1px solid var(--ln);padding:.4rem .6rem;vertical-align:top;font-size:.95rem}
+</style></head><body><main>
+<h1>Codexion</h1>
+<p class="mut">Working C implementation built on your <code>t_coder</code> / <code>t_program</code> structures. It compiles with <code>-Wall -Wextra -Werror -pthread</code> and was run on fifo and edf with 1 and 5 coders, plus invalid input. Test it harder yourself (helgrind, TSan, valgrind) and make sure you can explain every part, since the defense will ask.</p>
+<h2>What changed in your structs</h2><table>
+<tr><td><code>r_dongle</code>, <code>l_dongle</code></td><td><code>pthread_mutex_t *</code> became <code>t_dongle *</code></td></tr>
+<tr><td><code>dongle_lock</code></td><td>Replaced by <code>write_lock</code>. Each dongle now owns its mutex inside <code>t_dongle</code></td></tr>
+<tr><td><code>t_program</code> locks</td><td>Pointers became plain values; coders point at them</td></tr>
+<tr><td>New in <code>t_coder</code></td><td><code>edf</code>, <code>dongle_cooldown</code>, <code>last_compile_start</code>, <code>start_time</code></td></tr>
+<tr><td>New in <code>t_program</code></td><td>The parsed arguments, <code>monitor</code> thread, <code>dongles</code> array</td></tr>
+<tr><td><code>compiling</code></td><td>Kept and maintained, but burnout does not need it: <code>last_compile_start</code> is set when the compile starts</td></tr>
+</table>
+<p class="mut">Caveats: the code follows the Norm style but run norminette yourself. <code>printf</code> is line-buffered on a terminal but fully buffered into a pipe, and <code>fflush</code> is not in the allowed function list, so for piped output you may want your own <code>write</code>-based logger. Init error paths are minimal.</p>
+<h2>codexion.h</h2>
+<p>Your two structs, kept in place. Dongles become <code>t_dongle</code> (mutex + cond + cooldown + heap) so a plain mutex pointer is no longer enough.</p>
+<pre>#ifndef CODEXION_H
+# define CODEXION_H
+
+# include &lt;pthread.h&gt;
+# include &lt;stdio.h&gt;
+# include &lt;stdlib.h&gt;
+# include &lt;string.h&gt;
+# include &lt;unistd.h&gt;
+# include &lt;sys/time.h&gt;
+
+typedef struct s_req
+{
+	size_t			key;
+	size_t			seq;
+	int				id;
+}					t_req;
+
+typedef struct s_heap
+{
+	t_req			*data;
+	int				size;
+}					t_heap;
+
+typedef struct s_dongle
+{
+	pthread_mutex_t	lock;
+	pthread_cond_t	cond;
+	int				in_use;
+	size_t			available_at;
+	size_t			next_seq;
+	t_heap			queue;
+}					t_dongle;
+
+typedef struct s_coder
+{
+	pthread_t		thread;
+	int				id;
+	int				compiling;
+	int				compiles;
+	int				nb_of_coders;
+	int				*burned_out;
+	int				edf;
+	size_t			time_to_burnout;
+	size_t			time_to_compile;
+	size_t			time_to_debug;
+	size_t			time_to_refactor;
+	size_t			dongle_cooldown;
+	size_t			last_compile_start;
+	size_t			start_time;
+	t_dongle		*r_dongle;
+	t_dongle		*l_dongle;
+	pthread_mutex_t	*burnout_lock;
+	pthread_mutex_t	*compile_lock;
+	pthread_mutex_t	*write_lock;
+}					t_coder;
+
+typedef struct s_program
+{
+	int				burnout_flag;
+	int				nb_of_coders;
+	int				compiles_required;
+	int				edf;
+	size_t			time_to_burnout;
+	size_t			time_to_compile;
+	size_t			time_to_debug;
+	size_t			time_to_refactor;
+	size_t			dongle_cooldown;
+	size_t			start_time;
+	pthread_t		monitor;
+	pthread_mutex_t	burnout_lock;
+	pthread_mutex_t	compile_lock;
+	pthread_mutex_t	write_lock;
+	t_dongle		*dongles;
+	t_coder			*coders;
+}					t_program;
+
+int		parse_args(int ac, char **av, t_program *p);
+int		init_program(t_program *p);
+void	cleanup(t_program *p);
+void	heap_push(t_heap *h, t_req r);
+void	heap_pop(t_heap *h);
+int		take_dongle(t_coder *c, t_dongle *d);
+void	release_dongle(t_coder *c, t_dongle *d);
+void	*coder_routine(void *arg);
+void	*monitor_routine(void *arg);
+size_t	get_time(void);
+void	sleep_ms(t_coder *c, size_t ms);
+int		is_burned_out(t_coder *c);
+void	log_state(t_coder *c, char *msg);
+
+#endif
+</pre>
+<h2>main.c</h2>
+<pre>#include &quot;codexion.h&quot;
+
+static void	run_simulation(t_program *p)
+{
+	int	i;
+
+	i = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_create(&amp;p-&gt;coders[i].thread, NULL, coder_routine,
+			&amp;p-&gt;coders[i]);
+		i++;
+	}
+	pthread_create(&amp;p-&gt;monitor, NULL, monitor_routine, p);
+	pthread_join(p-&gt;monitor, NULL);
+	i = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_join(p-&gt;coders[i].thread, NULL);
+		i++;
+	}
+}
+
+int	main(int ac, char **av)
+{
+	t_program	p;
+
+	memset(&amp;p, 0, sizeof(t_program));
+	if (parse_args(ac, av, &amp;p))
+	{
+		write(2, &quot;Error: invalid arguments\n&quot;, 25);
+		return (1);
+	}
+	if (init_program(&amp;p))
+	{
+		cleanup(&amp;p);
+		return (1);
+	}
+	run_simulation(&amp;p);
+	cleanup(&amp;p);
+	return (0);
+}
+</pre>
+<h2>parse.c</h2>
+<pre>#include &quot;codexion.h&quot;
+
+static int	parse_num(char *s, size_t *out)
+{
+	size_t	i;
+	size_t	n;
+
+	i = 0;
+	n = 0;
+	if (!s[0])
+		return (1);
+	while (s[i])
+	{
+		if (s[i] &lt; &#x27;0&#x27; || s[i] &gt; &#x27;9&#x27;)
+			return (1);
+		n = n * 10 + (s[i] - &#x27;0&#x27;);
+		if (n &gt; 2147483647)
+			return (1);
+		i++;
+	}
+	*out = n;
+	return (0);
+}
+
+static int	parse_scheduler(char *s, int *edf)
+{
+	if (!strcmp(s, &quot;fifo&quot;))
+		*edf = 0;
+	else if (!strcmp(s, &quot;edf&quot;))
+		*edf = 1;
+	else
+		return (1);
+	return (0);
+}
+
+int	parse_args(int ac, char **av, t_program *p)
+{
+	size_t	v[7];
+	int		i;
+
+	if (ac != 9)
+		return (1);
+	i = 0;
+	while (i &lt; 7)
+	{
+		if (parse_num(av[i + 1], &amp;v[i]))
+			return (1);
+		i++;
+	}
+	if (v[0] &lt; 1 || v[1] &lt; 1 || parse_scheduler(av[8], &amp;p-&gt;edf))
+		return (1);
+	p-&gt;nb_of_coders = v[0];
+	p-&gt;time_to_burnout = v[1];
+	p-&gt;time_to_compile = v[2];
+	p-&gt;time_to_debug = v[3];
+	p-&gt;time_to_refactor = v[4];
+	p-&gt;compiles_required = v[5];
+	p-&gt;dongle_cooldown = v[6];
+	return (0);
+}
+</pre>
+<h2>init.c</h2>
+<pre>#include &quot;codexion.h&quot;
+
+static int	init_dongles(t_program *p)
+{
+	int	i;
+
+	p-&gt;dongles = malloc(sizeof(t_dongle) * p-&gt;nb_of_coders);
+	if (!p-&gt;dongles)
+		return (1);
+	memset(p-&gt;dongles, 0, sizeof(t_dongle) * p-&gt;nb_of_coders);
+	i = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_mutex_init(&amp;p-&gt;dongles[i].lock, NULL);
+		pthread_cond_init(&amp;p-&gt;dongles[i].cond, NULL);
+		p-&gt;dongles[i].queue.data = malloc(sizeof(t_req) * 2);
+		if (!p-&gt;dongles[i].queue.data)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+static void	init_coder(t_program *p, int i)
+{
+	t_coder	*c;
+
+	c = &amp;p-&gt;coders[i];
+	c-&gt;id = i + 1;
+	c-&gt;compiling = 0;
+	c-&gt;compiles = 0;
+	c-&gt;nb_of_coders = p-&gt;nb_of_coders;
+	c-&gt;burned_out = &amp;p-&gt;burnout_flag;
+	c-&gt;edf = p-&gt;edf;
+	c-&gt;time_to_burnout = p-&gt;time_to_burnout;
+	c-&gt;time_to_compile = p-&gt;time_to_compile;
+	c-&gt;time_to_debug = p-&gt;time_to_debug;
+	c-&gt;time_to_refactor = p-&gt;time_to_refactor;
+	c-&gt;dongle_cooldown = p-&gt;dongle_cooldown;
+	c-&gt;start_time = p-&gt;start_time;
+	c-&gt;last_compile_start = p-&gt;start_time;
+	c-&gt;l_dongle = &amp;p-&gt;dongles[i];
+	c-&gt;r_dongle = &amp;p-&gt;dongles[(i + 1) % p-&gt;nb_of_coders];
+	c-&gt;burnout_lock = &amp;p-&gt;burnout_lock;
+	c-&gt;compile_lock = &amp;p-&gt;compile_lock;
+	c-&gt;write_lock = &amp;p-&gt;write_lock;
+}
+
+int	init_program(t_program *p)
+{
+	int	i;
+
+	p-&gt;burnout_flag = 0;
+	pthread_mutex_init(&amp;p-&gt;burnout_lock, NULL);
+	pthread_mutex_init(&amp;p-&gt;compile_lock, NULL);
+	pthread_mutex_init(&amp;p-&gt;write_lock, NULL);
+	p-&gt;start_time = get_time();
+	p-&gt;coders = malloc(sizeof(t_coder) * p-&gt;nb_of_coders);
+	if (!p-&gt;coders || init_dongles(p))
+		return (1);
+	i = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		init_coder(p, i);
+		i++;
+	}
+	return (0);
+}
+
+void	cleanup(t_program *p)
+{
+	int	i;
+
+	i = 0;
+	while (p-&gt;dongles &amp;&amp; i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_mutex_destroy(&amp;p-&gt;dongles[i].lock);
+		pthread_cond_destroy(&amp;p-&gt;dongles[i].cond);
+		free(p-&gt;dongles[i].queue.data);
+		i++;
+	}
+	free(p-&gt;dongles);
+	free(p-&gt;coders);
+	pthread_mutex_destroy(&amp;p-&gt;burnout_lock);
+	pthread_mutex_destroy(&amp;p-&gt;compile_lock);
+	pthread_mutex_destroy(&amp;p-&gt;write_lock);
+}
+</pre>
+<h2>heap.c</h2>
+<p>Hand-written binary heap. Order is key, then arrival seq, then coder id, which gives a deterministic tie-break.</p>
+<pre>#include &quot;codexion.h&quot;
+
+static int	req_less(t_req *a, t_req *b)
+{
+	if (a-&gt;key != b-&gt;key)
+		return (a-&gt;key &lt; b-&gt;key);
+	if (a-&gt;seq != b-&gt;seq)
+		return (a-&gt;seq &lt; b-&gt;seq);
+	return (a-&gt;id &lt; b-&gt;id);
+}
+
+static void	swap_req(t_req *a, t_req *b)
+{
+	t_req	tmp;
+
+	tmp = *a;
+	*a = *b;
+	*b = tmp;
+}
+
+void	heap_push(t_heap *h, t_req r)
+{
+	int	i;
+
+	i = h-&gt;size++;
+	h-&gt;data[i] = r;
+	while (i &gt; 0 &amp;&amp; req_less(&amp;h-&gt;data[i], &amp;h-&gt;data[(i - 1) / 2]))
+	{
+		swap_req(&amp;h-&gt;data[i], &amp;h-&gt;data[(i - 1) / 2]);
+		i = (i - 1) / 2;
+	}
+}
+
+void	heap_pop(t_heap *h)
+{
+	int	i;
+	int	c;
+
+	h-&gt;data[0] = h-&gt;data[--h-&gt;size];
+	i = 0;
+	while (2 * i + 1 &lt; h-&gt;size)
+	{
+		c = 2 * i + 1;
+		if (c + 1 &lt; h-&gt;size &amp;&amp; req_less(&amp;h-&gt;data[c + 1], &amp;h-&gt;data[c]))
+			c++;
+		if (!req_less(&amp;h-&gt;data[c], &amp;h-&gt;data[i]))
+			break ;
+		swap_req(&amp;h-&gt;data[c], &amp;h-&gt;data[i]);
+		i = c;
+	}
+}
+</pre>
+<h2>dongle.c</h2>
+<p>A coder may take a dongle only if it is at the top of the heap, the dongle is free, and the cooldown has passed. FIFO uses key = seq, EDF uses key = deadline.</p>
+<pre>#include &quot;codexion.h&quot;
+
+static t_req	make_req(t_coder *c, t_dongle *d)
+{
+	t_req	r;
+
+	r.id = c-&gt;id;
+	r.seq = d-&gt;next_seq++;
+	r.key = r.seq;
+	if (c-&gt;edf)
+	{
+		pthread_mutex_lock(c-&gt;compile_lock);
+		r.key = c-&gt;last_compile_start + c-&gt;time_to_burnout;
+		pthread_mutex_unlock(c-&gt;compile_lock);
+	}
+	return (r);
+}
+
+static int	can_take(t_coder *c, t_dongle *d)
+{
+	return (!d-&gt;in_use &amp;&amp; d-&gt;queue.data[0].id == c-&gt;id
+		&amp;&amp; get_time() &gt;= d-&gt;available_at);
+}
+
+static void	wait_dongle(t_coder *c, t_dongle *d)
+{
+	struct timespec	ts;
+
+	if (!d-&gt;in_use &amp;&amp; d-&gt;queue.data[0].id == c-&gt;id)
+	{
+		ts.tv_sec = d-&gt;available_at / 1000;
+		ts.tv_nsec = (d-&gt;available_at % 1000) * 1000000;
+		pthread_cond_timedwait(&amp;d-&gt;cond, &amp;d-&gt;lock, &amp;ts);
+	}
+	else
+		pthread_cond_wait(&amp;d-&gt;cond, &amp;d-&gt;lock);
+}
+
+int	take_dongle(t_coder *c, t_dongle *d)
+{
+	pthread_mutex_lock(&amp;d-&gt;lock);
+	heap_push(&amp;d-&gt;queue, make_req(c, d));
+	while (!is_burned_out(c) &amp;&amp; !can_take(c, d))
+		wait_dongle(c, d);
+	if (is_burned_out(c))
+	{
+		pthread_mutex_unlock(&amp;d-&gt;lock);
+		return (1);
+	}
+	heap_pop(&amp;d-&gt;queue);
+	d-&gt;in_use = 1;
+	pthread_mutex_unlock(&amp;d-&gt;lock);
+	log_state(c, &quot;has taken a dongle&quot;);
+	return (0);
+}
+
+void	release_dongle(t_coder *c, t_dongle *d)
+{
+	pthread_mutex_lock(&amp;d-&gt;lock);
+	d-&gt;in_use = 0;
+	d-&gt;available_at = get_time() + c-&gt;dongle_cooldown;
+	pthread_cond_broadcast(&amp;d-&gt;cond);
+	pthread_mutex_unlock(&amp;d-&gt;lock);
+}
+</pre>
+<h2>coder.c</h2>
+<p>Dongles are always taken lowest address first, which breaks circular wait. One coder: takes the single dongle, then waits for burnout.</p>
+<pre>#include &quot;codexion.h&quot;
+
+static int	acquire_both(t_coder *c)
+{
+	t_dongle	*first;
+	t_dongle	*second;
+
+	if (c-&gt;l_dongle == c-&gt;r_dongle)
+	{
+		if (take_dongle(c, c-&gt;l_dongle))
+			return (1);
+		while (!is_burned_out(c))
+			usleep(500);
+		return (1);
+	}
+	first = c-&gt;l_dongle;
+	second = c-&gt;r_dongle;
+	if (first &gt; second)
+	{
+		first = c-&gt;r_dongle;
+		second = c-&gt;l_dongle;
+	}
+	if (take_dongle(c, first))
+		return (1);
+	if (take_dongle(c, second))
+		return (release_dongle(c, first), 1);
+	return (0);
+}
+
+static void	do_compile(t_coder *c)
+{
+	pthread_mutex_lock(c-&gt;compile_lock);
+	c-&gt;last_compile_start = get_time();
+	c-&gt;compiling = 1;
+	pthread_mutex_unlock(c-&gt;compile_lock);
+	log_state(c, &quot;is compiling&quot;);
+	sleep_ms(c, c-&gt;time_to_compile);
+	pthread_mutex_lock(c-&gt;compile_lock);
+	c-&gt;compiles++;
+	c-&gt;compiling = 0;
+	pthread_mutex_unlock(c-&gt;compile_lock);
+	release_dongle(c, c-&gt;l_dongle);
+	release_dongle(c, c-&gt;r_dongle);
+}
+
+void	*coder_routine(void *arg)
+{
+	t_coder	*c;
+
+	c = (t_coder *)arg;
+	while (!is_burned_out(c))
+	{
+		if (acquire_both(c))
+			break ;
+		do_compile(c);
+		log_state(c, &quot;is debugging&quot;);
+		sleep_ms(c, c-&gt;time_to_debug);
+		log_state(c, &quot;is refactoring&quot;);
+		sleep_ms(c, c-&gt;time_to_refactor);
+	}
+	return (NULL);
+}
+</pre>
+<h2>monitor.c</h2>
+<p>Polls every 0.5 ms. Sets the flag and prints under write_lock, then broadcasts every dongle so sleeping threads wake up.</p>
+<pre>#include &quot;codexion.h&quot;
+
+static int	check_coders(t_program *p)
+{
+	int		i;
+	int		done;
+	int		burnt;
+	size_t	last;
+
+	i = 0;
+	done = 1;
+	burnt = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_mutex_lock(&amp;p-&gt;compile_lock);
+		last = p-&gt;coders[i].last_compile_start;
+		if (p-&gt;coders[i].compiles &lt; p-&gt;compiles_required)
+			done = 0;
+		pthread_mutex_unlock(&amp;p-&gt;compile_lock);
+		if (!burnt &amp;&amp; get_time() - last &gt;= p-&gt;time_to_burnout)
+			burnt = i + 1;
+		i++;
+	}
+	if (done)
+		return (-1);
+	return (burnt);
+}
+
+static void	stop_all(t_program *p, int id)
+{
+	int	i;
+
+	pthread_mutex_lock(&amp;p-&gt;write_lock);
+	pthread_mutex_lock(&amp;p-&gt;burnout_lock);
+	p-&gt;burnout_flag = 1;
+	pthread_mutex_unlock(&amp;p-&gt;burnout_lock);
+	if (id &gt; 0)
+		printf(&quot;%zu %d burned out\n&quot;, get_time() - p-&gt;start_time, id);
+	pthread_mutex_unlock(&amp;p-&gt;write_lock);
+	i = 0;
+	while (i &lt; p-&gt;nb_of_coders)
+	{
+		pthread_mutex_lock(&amp;p-&gt;dongles[i].lock);
+		pthread_cond_broadcast(&amp;p-&gt;dongles[i].cond);
+		pthread_mutex_unlock(&amp;p-&gt;dongles[i].lock);
+		i++;
+	}
+}
+
+void	*monitor_routine(void *arg)
+{
+	t_program	*p;
+	int			res;
+
+	p = (t_program *)arg;
+	while (1)
+	{
+		res = check_coders(p);
+		if (res)
+		{
+			stop_all(p, res);
+			break ;
+		}
+		usleep(500);
+	}
+	return (NULL);
+}
+</pre>
+<h2>utils.c</h2>
+<p>Lock order is dongle lock, then write_lock, then burnout_lock (always innermost).</p>
+<pre>#include &quot;codexion.h&quot;
+
+size_t	get_time(void)
+{
+	struct timeval	tv;
+
+	gettimeofday(&amp;tv, NULL);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
+int	is_burned_out(t_coder *c)
+{
+	int	flag;
+
+	pthread_mutex_lock(c-&gt;burnout_lock);
+	flag = *c-&gt;burned_out;
+	pthread_mutex_unlock(c-&gt;burnout_lock);
+	return (flag);
+}
+
+void	sleep_ms(t_coder *c, size_t ms)
+{
+	size_t	start;
+
+	start = get_time();
+	while (get_time() - start &lt; ms &amp;&amp; !is_burned_out(c))
+		usleep(500);
+}
+
+void	log_state(t_coder *c, char *msg)
+{
+	pthread_mutex_lock(c-&gt;write_lock);
+	if (!is_burned_out(c))
+		printf(&quot;%zu %d %s\n&quot;, get_time() - c-&gt;start_time, c-&gt;id, msg);
+	pthread_mutex_unlock(c-&gt;write_lock);
+}
+</pre>
+<h2>Makefile</h2>
+<pre>NAME	= codexion
+CC		= cc
+CFLAGS	= -Wall -Wextra -Werror -pthread
+SRCS	= main.c parse.c init.c heap.c dongle.c coder.c monitor.c utils.c
+OBJS	= $(SRCS:.c=.o)
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+
+%.o: %.c codexion.h
+	$(CC) $(CFLAGS) -c $&lt; -o $@
+
+clean:
+	rm -f $(OBJS)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re
+</pre>
+</main></body></html>
