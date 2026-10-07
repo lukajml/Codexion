@@ -75,3 +75,4 @@ The coder structure contains all the general data, mutex pointers for the dongle
 
 # Resources
 https://medium.com/@ruinadd/philosophers-42-guide-the-dining-philosophers-problem-893a24bc0fe2
+https://github.com/michhel42/Codexion-42/

@@ -55,6 +55,15 @@ typedef struct s_data
 	long long		time_to_compile;
 	long long		time_to_debug;
 	long long		time_to_refactor;
+	int				nb_of_compiles_required;
+	long long		dongle_cooldown;
+	int				scheduler_type;
+	int				simulation_running;
+	long long		start;
+	pthread_mutex_t	state_mutex;
+	pthread_mutex_t	log_mutex;
+	t_dongle		*dongles;
+	pthread_t		monitor_id;
 }				t_data;
 
 //parsing.c
