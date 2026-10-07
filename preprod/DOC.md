@@ -61,3 +61,14 @@ Coders with threads and mutexes (C)
 - A seperated monitor thread must detect burnout precisely and stop the simulation.
 - Logging must be serialized so that two messages never interleave on a single line, use a mutex to protect output.
 - The simulation stop either when a coder burns out or when every coder has compiled
+
+## Mutex
+A mutex (mutual exclusion) ensures that only one thread acceses a shared resource at a time. Threads must lock the mutex before entering the critical section and unlock it after finishing.
+In the project, the mutex use are mostly important for managing the dongles, burnout and compilation.
+If one thread has locked a region of the code using a mutex and is excuting that piece of code, the scheduler decides to do a context switch, then all the other threads which are ready to execute the same region are unbloked.
+
+## Structures
+
+Each coder needs to be a thread and all data needs to pass to the routine functions, so structures are the best option.
+The program structure contains the all the coders (in an array), mutex, a burnout flag and the coder structure.
+The coder structure contains all the general data, mutex pointers for the dongle, mutex pointers that point to the mutex program structure and a burnout pointer that points to the burnout flag in the program structure.

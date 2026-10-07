@@ -6,7 +6,7 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/24 13:54:26 by lulauren          #+#    #+#             */
-/*   Updated: 2026/09/24 18:03:18 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/10/05 15:20:57 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ int	parser(int ac, char **av)
 	}
 	if (ft_strcmp(av[ac - 1], "fifo") != 0 && ft_strcmp(av[ac -1], "edf") != 0)
 	{
-		write(2, "ERROR: Scheduler should be 'fifo' or 'edf'.\n", 42);
+		write(2, "ERROR: Scheduler should be 'fifo' or 'edf'.\n", 44);
 		return (0);
 	}
 	return (1);

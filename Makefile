@@ -7,7 +7,8 @@ CFLAGS = -Wall -Wextra -Werror -pthread -I$(HEADER_DIR)
 
 SRC = 	$(addprefix $(SRC_DIR)/,\
 		parsing.c \
-		main.c)
+		main.c \
+		utils.c)
 
 OBJ = $(SRC:.c=.o)
 
