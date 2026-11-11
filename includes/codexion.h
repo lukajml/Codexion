@@ -17,7 +17,7 @@
 # include <unistd.h>
 # include <stdlib.h>
 # include <string.h>
-
+# include <stdbool.h>
 
 //parsing.c
 int	parser(int ac, char **av);
