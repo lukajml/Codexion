@@ -18,14 +18,19 @@
 # include <stdlib.h>
 # include <string.h>
 # include <stdbool.h>
+# include "../includes/struct.h"
+
+//init.c
+void	init_coders(t_data *data);
+void	init_dongle(t_data *data);
+void	init_data(t_data *data);
 
 //parsing.c
-int	parser(int ac, char **av);
+int	parser(int ac, char **av, t_data *data);
 int	check_all_nums(int ac, char **av);
 int	is_valid_numeric(char *str);
 
 //utils.c
-int	ft_atoi(const char *nptr);
-int	ft_strcmp(const char *s1, const char *s2);
+int	error(void);
 
 #endif

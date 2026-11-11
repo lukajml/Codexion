@@ -8,7 +8,9 @@ CFLAGS = -Wall -Wextra -Werror -pthread
 
 SRC = 	\
 		parsing.c \
-		main.c 
+		main.c \
+		utils.c \
+		init.c 
 		
 OBJS = $(addprefix $(OBJ_DIR)/,$(SRC:.c=.o))
 

@@ -14,6 +14,9 @@
 
 int	main(int ac, char **av)
 {
+	t_data	data;
+	
 	if (!parser(ac, av))
 		return (1);
+	init_data(data);
 }
