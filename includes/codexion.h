@@ -27,7 +27,7 @@ void	init_data(t_data *data);
 
 //parsing.c
 void	parser(int ac, char **av, t_data *data);
-int		check_all_nums(int ac, char **av);
+int		check_all_nums(char **av);
 int		is_valid_numeric(char *str);
 
 //utils.c

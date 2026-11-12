@@ -12,7 +12,8 @@
 
 #ifndef STRUCT_H
 # define STRUCT_H
-# include "../includes/codexion.h"
+# include <pthread.h>
+# include <stdbool.h>
 
 enum e_scheduler
 {
