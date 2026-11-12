@@ -6,10 +6,9 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/11 13:48:52 by lulauren          #+#    #+#             */
-/*   Updated: 2026/11/11 13:48:52 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/11/12 10:19:06 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../includes/codexion.h"
 
@@ -19,7 +18,7 @@ void	init_coders(t_data *data)
 
 	data->coders = malloc(sizeof(t_coders) * data->nb_coders);
 	if (!data->coders)
-		error();
+		error_print("Coders malloc failed.");
 	i = 0;
 	while (i < data->nb_coders)
 	{
@@ -42,9 +41,9 @@ void	init_dongle(t_data *data)
 
 	data->dongle = malloc(sizeof(t_dongle) * data->nb_coders);
 	if (!data->dongle)
-		error();
+		error_print("Dongle malloc failed.");
 	i = 0;
-	while(i < data->nb_coders)
+	while (i < data->nb_coders)
 	{
 		pthread_mutex_init(&data->dongle[i].mutex, NULL);
 		pthread_cond_init(&data->dongle[i].cond, NULL);

@@ -11,9 +11,15 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
+#include <unistd.h>
 
-int	error(void)
+int	error_print(char *msg)
 {
-	write(1, "ERROR\n", 6);
-	return (0);
+	if (msg)
+	{
+		write(STDERR_FILENO, "Error: ", 7);
+		write(STDERR_FILENO, msg, strlen(msg));
+	}
+	write(STDERR_FILENO, "\n", 1);
+	exit(EXIT_FAILURE);
 }

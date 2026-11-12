@@ -11,12 +11,12 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
+#include "../includes/struct.h"
 
 int	main(int ac, char **av)
 {
 	t_data	data;
-	
-	if (!parser(ac, av))
-		return (1);
-	init_data(data);
+
+	parser(ac, av, &data);
+	init_data(&data);
 }

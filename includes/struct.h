@@ -6,7 +6,7 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/11 11:51:15 by lulauren          #+#    #+#             */
-/*   Updated: 2026/11/11 11:51:15 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/11/12 10:00:39 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ enum e_dongle_status
 
 typedef struct s_dongle
 {
-	pthread_mutex_t			mutex;;
+	pthread_mutex_t			mutex;
 	pthread_cond_t			cond;
 	int						last_release;
 	enum e_dongle_status	status;
-} t_dongle;
+}	t_dongle;
 
 typedef struct s_coders
 {

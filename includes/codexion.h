@@ -6,7 +6,7 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/11 10:22:09 by lulauren          #+#    #+#             */
-/*   Updated: 2026/11/11 11:25:53 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/11/12 10:17:34 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,11 @@ void	init_dongle(t_data *data);
 void	init_data(t_data *data);
 
 //parsing.c
-int	parser(int ac, char **av, t_data *data);
-int	check_all_nums(int ac, char **av);
-int	is_valid_numeric(char *str);
+void	parser(int ac, char **av, t_data *data);
+int		check_all_nums(int ac, char **av);
+int		is_valid_numeric(char *str);
 
 //utils.c
-int	error(void);
+int		error_print(char *msg);
 
 #endif
