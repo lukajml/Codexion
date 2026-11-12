@@ -17,9 +17,9 @@ void	free_dongle(t_data *data)
 	int	i;
 
 	if (!data->dongle)
-		return;
+		return ;
 	i = 0;
-	while(i < data-> nb_coders)
+	while (i < data->nb_coders)
 	{
 		pthread_mutex_destroy(&data->dongle[i].mutex);
 		pthread_cond_destroy(&data->dongle[i].cond);
@@ -34,7 +34,7 @@ void	free_mutex(t_data *data)
 	int	i;
 
 	i = 0;
-	while(i < data->nb_coders)
+	while (i < data->nb_coders)
 		pthread_mutex_destroy(&data->coders[i++].mutex);
 	pthread_mutex_destroy(&data->log_mutex);
 }

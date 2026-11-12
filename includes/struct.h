@@ -36,7 +36,7 @@ typedef struct s_dongle
 	t_dongle_status	status;
 }	t_dongle;
 
-typedef struct	s_data t_data;
+typedef struct s_data	t_data;
 
 typedef struct s_coders
 {
