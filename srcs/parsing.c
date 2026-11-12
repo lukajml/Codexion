@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
-#include <string.h>
 
 int	is_valid_numeric(char *str)
 {
@@ -28,9 +27,12 @@ int	is_valid_numeric(char *str)
 	}
 	while (str[i])
 	{
-		if (str[i] < '0' || str[i] > '9')
+		if ((str[i] < '0' || str[i] > '9') && strlen(str) > 5)
 			return (0);
+		// else
+		// 	error_print("Integers must be less than 5 digits long for int overflow guard.");
 		i++;
+		//check for int overflow, ex 5
 	}
 	return (1);
 }
@@ -52,7 +54,7 @@ int	check_all_nums(char **av)
 void	parser(int ac, char **av, t_data *data)
 {
 	if (ac != 9)
-		error_print("Invalid amount of arguments: expected 8 arguments.");
+		error_print("Invalid amount of arguments expected 8 arguments.");
 	if (!check_all_nums(av))
 		error_print("The 7 first arguments must be positive integers.");
 	if (strcmp(av[8], "fifo") != 0 && strcmp(av[8], "edf") != 0)
@@ -67,10 +69,6 @@ void	parser(int ac, char **av, t_data *data)
 		.dongle_cooldown = atoi(av[7]),
 		.scheduler = strcmp(av[8], "edf") == 0
 	};
-	if (!data->nb_coders
-		|| !data->time_to_burnout
-		|| !data->time_to_compile
-		|| !data->time_to_debug
-		|| !data->time_to_refactor)
-		error_print("The arguments must be greater than 0.");
+	if (!data->nb_coders)
+		error_print("Coder must be greater than 0.");
 }

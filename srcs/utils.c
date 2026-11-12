@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
-#include <unistd.h>
 
 int	error_print(char *msg)
 {

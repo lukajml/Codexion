@@ -10,8 +10,12 @@ SRC = 	\
 		parsing.c \
 		main.c \
 		utils.c \
-		init.c 
-		
+		init.c \
+		routine.c \
+		threads.c \
+		monitor.c \
+		free.c 
+
 OBJS = $(addprefix $(OBJ_DIR)/,$(SRC:.c=.o))
 
 REMOVE = rm -rf
