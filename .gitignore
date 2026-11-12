@@ -1,7 +1,8 @@
-LEARNING.md
 .DS_Store
 .vscode
 .idea
 a.out
 *.o
 codexion
+objs
+TODO.txt
