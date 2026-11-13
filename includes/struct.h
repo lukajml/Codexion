@@ -32,7 +32,7 @@ typedef struct s_dongle
 {
 	pthread_mutex_t	mutex;
 	pthread_cond_t	cond;
-	int				last_release;
+	long			last_release;
 	t_dongle_status	status;
 }	t_dongle;
 
@@ -44,7 +44,7 @@ typedef struct s_coders
 	t_dongle		*left;
 	t_dongle		*right;
 	int				compiles_done;
-	int				last_compile;
+	long			last_compile;
 	int				left_index;
 	int				right_index;
 	t_data			*data;
@@ -66,6 +66,8 @@ struct s_data
 	t_dongle		*dongle;
 	bool			running;
 	pthread_mutex_t	log_mutex;
+	pthread_t		*threads;
+	pthread_t		monitor_thread;
 };
 
 #endif

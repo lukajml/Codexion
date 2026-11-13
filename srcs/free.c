@@ -45,6 +45,7 @@ void	free_all(t_data *data)
 		return ;
 	free_dongle(data);
 	free_mutex(data);
+	free(data->threads);
 	if (data->coders)
 	{
 		free(data->coders);

@@ -31,7 +31,7 @@ int		check_all_nums(char **av);
 int		is_valid_numeric(char *str);
 
 //utils.c
-int		error_print(char *msg);
+void	error_print(char *msg);
 
 //free.c
 void	free_dongle(t_data *data);

@@ -55,8 +55,9 @@ void	init_dongle(t_data *data)
 
 void	init_data(t_data *data)
 {
-	init_coders(data);
 	init_dongle(data);
+	init_coders(data);
+	//malloc
 	pthread_mutex_init(&data->log_mutex, NULL);
 	data->running = false;
 }

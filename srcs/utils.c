@@ -12,13 +12,11 @@
 
 #include "../includes/codexion.h"
 
-int	error_print(char *msg)
+void	error_print(char *msg)
 {
+	write(STDERR_FILENO, "Error: ", 7);
 	if (msg)
-	{
-		write(STDERR_FILENO, "Error: ", 7);
 		write(STDERR_FILENO, msg, strlen(msg));
-	}
 	write(STDERR_FILENO, "\n", 1);
 	exit(EXIT_FAILURE);
 }

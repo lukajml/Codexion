@@ -15,28 +15,26 @@
 int	is_valid_numeric(char *str)
 {
 	int	i;
+	int	digits;
 
 	i = 0;
+	digits = 0;
 	if (!str || str[i] == '\0')
 		return (0);
 	if (str[i] == '+')
-	{
 		i++;
-		if (str[i] == '\0')
-			return (0);
-	}
+	if (str[i] == '\0')
+		return (0);
 	while (str[i])
 	{
 		if (str[i] < '0' || str[i] > '9')
 			return (0);
+		digits++;
 		i++;
 	}
-	if (strlen(str) > 5)
-	{
+	if (digits > 5)
 		error_print("Integers must not be more than "
 			"5 digits long for int overflow guard.");
-		return (0);
-	}
 	return (1);
 }
 
