@@ -30,7 +30,7 @@ void	parser(int ac, char **av, t_data *data);
 int		check_all_nums(char **av);
 int		is_valid_numeric(char *str);
 
-//utils.c
+//error.c
 void	error_print(char *msg);
 
 //free.c
@@ -39,9 +39,14 @@ void	free_mutex(t_data *data);
 void	free_all(t_data *data);
 
 //threads.c
-
-//monitor.c
+void		start_simulation(t_data *data);
 
 //routine.c
+void	*coder_routine(void *arg);
+void	*monitor_routine(void *arg);
+
+//time.c
+long	get_time_ms(void);
+long	time_since(long t);
 
 #endif

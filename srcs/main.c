@@ -19,4 +19,7 @@ int	main(int ac, char **av)
 
 	parser(ac, av, &data);
 	init_data(&data);
+	start_simulation(&data);
+	free_all(&data);
+	return (0);
 }
