@@ -40,3 +40,9 @@ fclean: clean
 re: fclean all
 
 .PHONY = all clean fclean re
+
+
+# ./codexion 4 1000 50 50 50 5 0 edf -> all done
+# ./codexion 4 100 50 50 50 5 0 edf -> one burnout
+# ./codexion 1 200 500 50 50 5 0 edf -> one coder burnout mid routine
+# ./codexion 7 1000 50 50 50 2 0 edf -> odd table, no deadlock

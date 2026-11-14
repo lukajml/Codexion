@@ -6,15 +6,13 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/12 12:17:17 by lulauren          #+#    #+#             */
-/*   Updated: 2026/11/12 12:17:17 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/11/14 15:09:53 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
-#include <pthread.h>
-#include <unistd.h>
 
-static bool	should_stop(t_data *data)
+bool	should_stop(t_data *data)
 {
 	bool	stop;
 
@@ -24,6 +22,13 @@ static bool	should_stop(t_data *data)
 	return (stop);
 }
 
+void	set_stop(t_data *data)
+{
+	pthread_mutex_lock(&data->stop_mutex);
+	data->stop = true;
+	pthread_mutex_unlock(&data->stop_mutex);
+}
+
 void	*coder_routine(void *arg)
 {
 	t_coders	*coder;
@@ -31,6 +36,7 @@ void	*coder_routine(void *arg)
 	coder = (t_coders *)arg;
 	while (!coder->data->running)
 		usleep(100);
+	coder->last_compile = coder->data->start;
 	while (!should_stop(coder->data)
 		&& coder->compiles_done < coder->data->nb_of_compiles)
 	{
@@ -44,15 +50,5 @@ void	*coder_routine(void *arg)
 		usleep(coder->data->time_to_debug * 1000);
 		usleep(coder->data->time_to_refactor * 1000);
 	}
-	return (NULL);
-}
-
-void	*monitor_routine(void *arg)
-{
-	t_data	*data;
-
-	data = (t_data *)arg;
-	while (!data->running)
-		usleep(100);
 	return (NULL);
 }

@@ -42,8 +42,9 @@ void	free_all(t_data *data);
 void	start_simulation(t_data *data);
 
 //routine.c
+bool	should_stop(t_data *data);
+void	set_stop(t_data *data);
 void	*coder_routine(void *arg);
-void	*monitor_routine(void *arg);
 
 //time.c
 long	get_time_ms(void);
@@ -51,6 +52,7 @@ long	time_since(long t);
 
 //monitor.c
 void	log_event(t_data *data, long ts, int id, const char *msg);
+void	*monitor_routine(void *arg);
 
 //dongle.c
 void	take_dongle(t_coders *coder, t_dongle *dongle);
