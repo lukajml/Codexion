@@ -26,9 +26,10 @@ static void	spawn_coders(t_data *data)
 	int	i;
 
 	i = 0;
-	while(i < data->nb_coders)
+	while (i < data->nb_coders)
 	{
-		if (pthread_create(&data->threads[i], NULL, coder_routine, &data->coders[i]) != 0)
+		if (pthread_create(&data->threads[i],
+				NULL, coder_routine, &data->coders[i]) != 0)
 		{
 			data->running = true;
 			while (--i >= 0)

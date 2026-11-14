@@ -14,7 +14,7 @@
 
 static bool	takeable(t_dongle *dongle, t_data *data)
 {
-	return (dongle->status == FREE 
+	return (dongle->status == FREE
 		&& get_time_ms() - dongle->last_release >= data->dongle_cooldown);
 }
 
@@ -26,8 +26,8 @@ void	take_dongle(t_coders *coder, t_dongle *dongle)
 		if (dongle->status == FREE)
 		{
 			pthread_mutex_unlock(&dongle->mutex);
-			usleep((coder->data->dongle_cooldown 
-				- (get_time_ms() - dongle->last_release)) * 1000);
+			usleep((coder->data->dongle_cooldown
+					- (get_time_ms() - dongle->last_release)) * 1000);
 			pthread_mutex_lock(&dongle->mutex);
 		}
 		else

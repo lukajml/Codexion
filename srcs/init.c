@@ -57,7 +57,7 @@ void	init_data(t_data *data)
 {
 	init_dongle(data);
 	init_coders(data);
-	data->threads = malloc(sizeof(pthread_t) *data->nb_coders);
+	data->threads = malloc(sizeof(pthread_t) * data->nb_coders);
 	if (!data->threads)
 		error_print("Threads malloc failed.");
 	pthread_mutex_init(&data->log_mutex, NULL);

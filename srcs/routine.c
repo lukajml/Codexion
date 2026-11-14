@@ -26,8 +26,9 @@ static bool	should_stop(t_data *data)
 
 void	*coder_routine(void *arg)
 {
-	t_coders	*coder = (t_coders *)arg;
+	t_coders	*coder;
 
+	coder = (t_coders *)arg;
 	while (!coder->data->running)
 		usleep(100);
 	while (!should_stop(coder->data)
@@ -48,8 +49,9 @@ void	*coder_routine(void *arg)
 
 void	*monitor_routine(void *arg)
 {
-	t_data	*data = (t_data *)arg;
+	t_data	*data;
 
+	data = (t_data *)arg;
 	while (!data->running)
 		usleep(100);
 	return (NULL);
