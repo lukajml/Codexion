@@ -11,3 +11,11 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
+
+void	log_event(t_data *data, long ts, int id, const char *msg)
+{
+	pthread_mutex_lock(&data->log_mutex);
+	printf("%ld %d %s\n", ts - data->start, id, msg);
+	fflush(stdout);
+	pthread_mutex_unlock(&data->log_mutex);
+}

@@ -15,7 +15,8 @@ SRC = 	\
 		threads.c \
 		monitor.c \
 		free.c \
-		time.c
+		time.c \
+		dongle.c
 
 OBJS = $(addprefix $(OBJ_DIR)/,$(SRC:.c=.o))
 

@@ -68,6 +68,8 @@ struct s_data
 	pthread_mutex_t	log_mutex;
 	pthread_t		*threads;
 	pthread_t		monitor_thread;
+	bool			stop;
+	pthread_mutex_t	stop_mutex;
 };
 
 #endif

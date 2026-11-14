@@ -31,7 +31,7 @@ int		check_all_nums(char **av);
 int		is_valid_numeric(char *str);
 
 //error.c
-void	error_print(char *msg);
+void	error_print(const char *msg);
 
 //free.c
 void	free_dongle(t_data *data);
@@ -48,5 +48,14 @@ void	*monitor_routine(void *arg);
 //time.c
 long	get_time_ms(void);
 long	time_since(long t);
+
+//monitor.c
+void	log_event(t_data *data, long ts, int id, const char *msg);
+
+//dongle.c
+void	take_dongle(t_coders *coder, t_dongle *dongle);
+void	drop_dongle(t_coders *coder, t_dongle *dongle);
+void	take_both(t_coders *coder);
+void	drop_both(t_coders *coder);
 
 #endif

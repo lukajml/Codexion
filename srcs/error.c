@@ -12,7 +12,7 @@
 
 #include "../includes/codexion.h"
 
-void	error_print(char *msg)
+void	error_print(const char *msg)
 {
 	write(STDERR_FILENO, "Error: ", 7);
 	if (msg)
