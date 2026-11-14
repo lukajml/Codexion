@@ -18,7 +18,7 @@ static bool	should_stop(t_data *data)
 {
 	bool	stop;
 
-	pthread_mutex_unlock(&data->stop_mutex);
+	pthread_mutex_lock(&data->stop_mutex);
 	stop = data->stop;
 	pthread_mutex_unlock(&data->stop_mutex);
 	return (stop);
@@ -31,7 +31,7 @@ void	*coder_routine(void *arg)
 	while (!coder->data->running)
 		usleep(100);
 	while (!should_stop(coder->data)
-		&& coder->compiles_done < coder->data->nb_coders)
+		&& coder->compiles_done < coder->data->nb_of_compiles)
 	{
 		take_both(coder);
 		log_event(coder->data, get_time_ms(), coder->id, "compile");

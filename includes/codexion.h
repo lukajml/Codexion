@@ -39,7 +39,7 @@ void	free_mutex(t_data *data);
 void	free_all(t_data *data);
 
 //threads.c
-void		start_simulation(t_data *data);
+void	start_simulation(t_data *data);
 
 //routine.c
 void	*coder_routine(void *arg);
@@ -54,7 +54,7 @@ void	log_event(t_data *data, long ts, int id, const char *msg);
 
 //dongle.c
 void	take_dongle(t_coders *coder, t_dongle *dongle);
-void	drop_dongle(t_coders *coder, t_dongle *dongle);
+void	drop_dongle(t_dongle *dongle);
 void	take_both(t_coders *coder);
 void	drop_both(t_coders *coder);
 

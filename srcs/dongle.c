@@ -11,9 +11,6 @@
 /* ************************************************************************** */
 
 #include "../includes/codexion.h"
-#include <bits/pthreadtypes.h>
-#include <pthread.h>
-#include <unistd.h>
 
 static bool	takeable(t_dongle *dongle, t_data *data)
 {
@@ -29,7 +26,7 @@ void	take_dongle(t_coders *coder, t_dongle *dongle)
 		if (dongle->status == FREE)
 		{
 			pthread_mutex_unlock(&dongle->mutex);
-			usleep((data->dongle_cooldown 
+			usleep((coder->data->dongle_cooldown 
 				- (get_time_ms() - dongle->last_release)) * 1000);
 			pthread_mutex_lock(&dongle->mutex);
 		}
@@ -40,7 +37,7 @@ void	take_dongle(t_coders *coder, t_dongle *dongle)
 	pthread_mutex_unlock(&dongle->mutex);
 }
 
-void	drop_dongle(t_coders *coder, t_dongle *dongle)
+void	drop_dongle(t_dongle *dongle)
 {
 	pthread_mutex_lock(&dongle->mutex);
 	dongle->status = FREE;
@@ -67,7 +64,7 @@ void	take_both(t_coders *coder)
 
 void	drop_both(t_coders *coder)
 {
-	drop_dongle(coder, coder->left);
+	drop_dongle(coder->left);
 	if (coder->right != coder->left)
-		drop_dongle(coder, coder->right);
+		drop_dongle(coder->right);
 }

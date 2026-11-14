@@ -37,6 +37,7 @@ void	free_mutex(t_data *data)
 	while (i < data->nb_coders)
 		pthread_mutex_destroy(&data->coders[i++].mutex);
 	pthread_mutex_destroy(&data->log_mutex);
+	pthread_mutex_destroy(&data->stop_mutex);
 }
 
 void	free_all(t_data *data)

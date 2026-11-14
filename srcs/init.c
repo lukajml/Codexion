@@ -61,5 +61,6 @@ void	init_data(t_data *data)
 	if (!data->threads)
 		error_print("Threads malloc failed.");
 	pthread_mutex_init(&data->log_mutex, NULL);
+	pthread_mutex_init(&data->stop_mutex, NULL);
 	data->running = false;
 }
