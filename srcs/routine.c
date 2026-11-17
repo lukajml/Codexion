@@ -36,15 +36,19 @@ void	*coder_routine(void *arg)
 	coder = (t_coders *)arg;
 	while (!coder->data->running)
 		usleep(100);
+	pthread_mutex_lock(&coder->mutex);
 	coder->last_compile = coder->data->start;
+	pthread_mutex_unlock(&coder->mutex);
 	while (!should_stop(coder->data)
 		&& coder->compiles_done < coder->data->nb_of_compiles)
 	{
 		take_both(coder);
 		log_event(coder->data, get_time_ms(), coder->id, "compile");
 		usleep(coder->data->time_to_compile * 1000);
-		coder->compiles_done++; //to lock
-		coder->last_compile = get_time_ms(); //to lock
+		pthread_mutex_lock(&coder->mutex);
+		coder->compiles_done++;
+		coder->last_compile = get_time_ms();
+		pthread_mutex_unlock(&coder->mutex);
 		drop_both(coder);
 		log_event(coder->data, coder->last_compile, coder->id, "released");
 		usleep(coder->data->time_to_debug * 1000);
