@@ -26,23 +26,27 @@ void	*monitor_routine(void *arg)
 	t_coders	*coder;
 	long		now;
 	int			done;
+	int			done_compiles;
+	long		ts;
 	int			i;
 
 	data = (t_data *)arg;
-	while (!data->running)
-		usleep(100);
 	while (!should_stop(data))
 	{
 		usleep(1000);
 		now = get_time_ms();
 		done = 0;
 		i = 0;
-		while (i <data->nb_coders)
+		while (i < data->nb_coders)
 		{
 			coder = &data->coders[i++];
-			if (coder->compiles_done >= data->nb_of_compiles)
+			pthread_mutex_lock(&coder->mutex);
+			done_compiles = coder->compiles_done;
+			ts = coder->last_compile;
+			pthread_mutex_unlock(&coder->mutex);
+			if (done_compiles >= data->nb_of_compiles)
 				done++;
-			else if (now - coder->last_compile + data->time_to_compile
+			else if (now - ts + data->time_to_compile
 				>= data->time_to_burnout)
 			{
 				log_event(data, now, coder->id, "burned out");

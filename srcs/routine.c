@@ -29,18 +29,26 @@ void	set_stop(t_data *data)
 	pthread_mutex_unlock(&data->stop_mutex);
 }
 
+static int	get_compiles(t_coders *coder)
+{
+	int	done;
+
+	pthread_mutex_lock(&coder->mutex);
+	done = coder->compiles_done;
+	pthread_mutex_unlock(&coder->mutex);
+	return (done);
+}
+
 void	*coder_routine(void *arg)
 {
 	t_coders	*coder;
 
 	coder = (t_coders *)arg;
-	while (!coder->data->running)
-		usleep(100);
 	pthread_mutex_lock(&coder->mutex);
 	coder->last_compile = coder->data->start;
 	pthread_mutex_unlock(&coder->mutex);
 	while (!should_stop(coder->data)
-		&& coder->compiles_done < coder->data->nb_of_compiles)
+		&& get_compiles(coder) < coder->data->nb_of_compiles)
 	{
 		take_both(coder);
 		log_event(coder->data, get_time_ms(), coder->id, "compile");
