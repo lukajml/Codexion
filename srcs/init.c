@@ -31,6 +31,8 @@ void	init_coders(t_data *data)
 			.data = data
 		};
 		pthread_mutex_init(&data->coders[i].mutex, NULL);
+		pthread_mutex_init(&data->coders->compiles_done[i].mutex, NULL);
+		pthread_mutex_init(&data->coders->last_compile[i].mutex, NULL);
 		i++;
 	}
 }

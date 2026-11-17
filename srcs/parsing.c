@@ -34,7 +34,7 @@ int	is_valid_numeric(char *str)
 	}
 	if (digits > 5)
 		error_print("Integers must not be more than "
-			"5 digits long for int overflow guard.");
+			"5 digits to avoid int overflows.");
 	return (1);
 }
 

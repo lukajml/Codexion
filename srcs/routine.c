@@ -43,8 +43,8 @@ void	*coder_routine(void *arg)
 		take_both(coder);
 		log_event(coder->data, get_time_ms(), coder->id, "compile");
 		usleep(coder->data->time_to_compile * 1000);
-		coder->compiles_done++;
-		coder->last_compile = get_time_ms();
+		coder->compiles_done++; //to lock
+		coder->last_compile = get_time_ms(); //to lock
 		drop_both(coder);
 		log_event(coder->data, coder->last_compile, coder->id, "released");
 		usleep(coder->data->time_to_debug * 1000);
