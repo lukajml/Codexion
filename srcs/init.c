@@ -6,7 +6,7 @@
 /*   By: lulauren <luka.laurent@learner.42.tech>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/11 13:48:52 by lulauren          #+#    #+#             */
-/*   Updated: 2026/11/12 10:19:06 by lulauren         ###   ########.fr       */
+/*   Updated: 2026/11/17 15:43:46 by lulauren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,10 @@ void	init_dongle(t_data *data)
 
 void	init_data(t_data *data)
 {
+	if (data->scheduler == FIFO)
+		data->scheduler_key = &key_arrival;
+	else
+		data->scheduler_key = &key_deadline;
 	init_dongle(data);
 	init_coders(data);
 	data->threads = malloc(sizeof(pthread_t) * data->nb_coders);
