@@ -20,51 +20,49 @@ void	log_event(t_data *data, long ts, int id, const char *msg)
 	pthread_mutex_unlock(&data->log_mutex);
 }
 
-// static void	check(t_data *data, t_coders *coder, long now)
-// {
-// 
-// }
+static int	sweep(t_data *data, long now)
+{
+	int	i;
+	int	done;
+	t_coders	*coder;
+	int	done_compiles;
+	long	timestamp;
+
+	done = 0;
+	i = 0;
+	while (i < data->nb_coders)
+	{
+		coder = &data->coders[i++];
+		pthread_mutex_lock(&coder->mutex);
+		done_compiles = coder->compiles_done;
+		timestamp = coder->last_compile;
+		pthread_mutex_unlock(&coder->mutex);
+		if (done_compiles >= data->nb_of_compiles)
+			done++;
+		else if (now - timestamp >= data->time_to_burnout)
+		{
+			log_event(data, now, coder->id, "burned out");
+			set_stop(data);
+			return (-1);
+		}
+	}
+	return (done);
+}
 
 void	*monitor_routine(void *arg)
 {
-	t_data		*data;
-	t_coders	*coder;
-	long		now;
-	int			done;
-	int			done_compiles;
-	long		ts;
-	int			i;
+	t_data	*data;
+	long	now;
+	int		done;
 
 	data = (t_data *)arg;
 	while (!should_stop(data))
 	{
 		usleep(1000);
 		now = get_time_ms();
-		done = 0;
-		i = 0;
-		while (i < data->nb_coders)
-		{
-			coder = &data->coders[i++];
-			pthread_mutex_lock(&coder->mutex);
-			done_compiles = coder->compiles_done;
-			ts = coder->last_compile;
-			pthread_mutex_unlock(&coder->mutex);
-			if (done_compiles >= data->nb_of_compiles)
-				done++;
-			else if (now - ts + data->time_to_compile
-				>= data->time_to_burnout)
-			{
-				log_event(data, now, coder->id, "burned out");
-				set_stop(data);
-				return (NULL);
-			}
-		}
+		done = sweep(data, now);
 		if (done == data->nb_coders)
-		{
-			log_event(data, now, 0, "all done");
 			set_stop(data);
-			return (NULL);
-		}
 	}
 	return (NULL);
 }
