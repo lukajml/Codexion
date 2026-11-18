@@ -20,10 +20,10 @@ void	log_event(t_data *data, long ts, int id, const char *msg)
 	pthread_mutex_unlock(&data->log_mutex);
 }
 
-static void	help_monitor(t_data *data, t_coders *coder, long now)
-{
-
-}
+// static void	check(t_data *data, t_coders *coder, long now)
+// {
+// 
+// }
 
 void	*monitor_routine(void *arg)
 {
