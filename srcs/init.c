@@ -55,10 +55,6 @@ void	init_dongle(t_data *data)
 
 void	init_data(t_data *data)
 {
-	if (data->scheduler == FIFO)
-		data->scheduler_key = &key_arrival;
-	else
-		data->scheduler_key = &key_deadline;
 	init_dongle(data);
 	init_coders(data);
 	data->threads = malloc(sizeof(pthread_t) * data->nb_coders);

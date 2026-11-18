@@ -12,6 +12,7 @@
 
 #ifndef STRUCT_H
 # define STRUCT_H
+# define NB_MAX_CODERS
 # include <pthread.h>
 # include <stdbool.h>
 
@@ -28,22 +29,12 @@ typedef enum e_dongle_status
 	COOLDOWN
 }	t_dongle_status;
 
-typedef struct s_wait_list
-{
-	int		coder_id;
-	long	deadline;
-	long	arrival;
-}	t_wait_list;
-
 typedef struct s_dongle
 {
 	pthread_mutex_t	mutex;
 	pthread_cond_t	cond;
 	long			last_release;
 	t_dongle_status	status;
-	int				capacity;
-	// t_wait_list		waiters[capacity];
-	int				wait_count;
 }	t_dongle;
 
 typedef struct s_data	t_data;
@@ -80,7 +71,6 @@ struct s_data
 	pthread_t		monitor_thread;
 	bool			stop;
 	pthread_mutex_t	stop_mutex;
-	long			(*schduler_key)(const t_wait_list *);
 };
 
 #endif
