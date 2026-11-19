@@ -22,11 +22,11 @@ void	log_event(t_data *data, long ts, int id, const char *msg)
 
 static int	sweep(t_data *data, long now)
 {
-	int	i;
-	int	done;
+	int			i;
+	int			done;
 	t_coders	*coder;
-	int	done_compiles;
-	long	timestamp;
+	int			done_compiles;
+	long		timestamp;
 
 	done = 0;
 	i = 0;

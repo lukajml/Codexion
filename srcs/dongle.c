@@ -35,6 +35,7 @@ void	take_dongle(t_coders *coder, t_dongle *dongle)
 	}
 	dongle->status = LOCK;
 	pthread_mutex_unlock(&dongle->mutex);
+	log_event(coder->data, get_time_ms(), coder->id, "has taken a dongle");
 }
 
 void	drop_dongle(t_dongle *dongle)
