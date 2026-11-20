@@ -49,6 +49,11 @@ void	init_dongle(t_data *data)
 		pthread_cond_init(&data->dongle[i].cond, NULL);
 		data->dongle[i].last_release = 0;
 		data->dongle[i].status = FREE;
+		data->dongle[i].waiters = malloc(sizeof(t_waiter) * data->nb_coders);
+		if (!data->dongle[i].waiters)
+			error_print("Waiter malloc failed.");
+		data->dongle[i].capacity = data->nb_coders;
+		data->dongle[i].size = 0;
 		i++;
 	}
 }

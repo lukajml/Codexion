@@ -12,7 +12,6 @@
 
 #ifndef STRUCT_H
 # define STRUCT_H
-# define NB_MAX_CODERS
 # include <pthread.h>
 # include <stdbool.h>
 
@@ -25,9 +24,15 @@ typedef enum e_scheduler
 typedef enum e_dongle_status
 {
 	FREE,
-	LOCK,
-	COOLDOWN
+	LOCK
 }	t_dongle_status;
+
+typedef struct s_waiter
+{
+	int		coder;
+	long	key;
+	long	arrival;
+}	t_waiter;
 
 typedef struct s_dongle
 {
@@ -35,6 +40,9 @@ typedef struct s_dongle
 	pthread_cond_t	cond;
 	long			last_release;
 	t_dongle_status	status;
+	t_waiter		*waiters;
+	int				capacity;
+	int				size;
 }	t_dongle;
 
 typedef struct s_data	t_data;
