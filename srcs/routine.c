@@ -42,6 +42,7 @@ static int	get_compiles(t_coders *coder)
 void	*coder_routine(void *arg)
 {
 	t_coders	*coder;
+	long		timestamp;
 
 	coder = (t_coders *)arg;
 	pthread_mutex_lock(&coder->mutex);
@@ -51,17 +52,18 @@ void	*coder_routine(void *arg)
 		&& get_compiles(coder) < coder->data->nb_of_compiles)
 	{
 		take_both(coder);
-		log_event(coder->data, get_time_ms(), coder->id, "is compiling");
-		usleep(coder->data->time_to_compile * 1000);
+		timestamp = get_time_ms();
 		pthread_mutex_lock(&coder->mutex);
+		coder->last_compile = timestamp;
 		coder->compiles_done++;
-		coder->last_compile = get_time_ms();
 		pthread_mutex_unlock(&coder->mutex);
+		log_event(coder->data, timestamp, coder->id, "is compiling");
+		usleep(coder->data->time_to_compile * 1000);
 		drop_both(coder);
-		usleep(coder->data->time_to_debug * 1000);
 		log_event(coder->data, get_time_ms(), coder->id, "is debugging");
-		usleep(coder->data->time_to_refactor * 1000);
+		usleep(coder->data->time_to_debug * 1000);
 		log_event(coder->data, get_time_ms(), coder->id, "is refactoring");
+		usleep(coder->data->time_to_refactor * 1000);
 	}
 	return (NULL);
 }
