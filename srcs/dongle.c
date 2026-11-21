@@ -12,30 +12,57 @@
 
 #include "../includes/codexion.h"
 
-static bool	takeable(t_dongle *dongle, t_data *data)
+static bool	wins_dongle(t_coders *coder, t_dongle *dongle)
 {
 	return (dongle->status == FREE
-		&& get_time_ms() - dongle->last_release >= data->dongle_cooldown);
+		&& get_time_ms() - dongle->last_release >= coder->data->dongle_cooldown
+		&& dongle->size > 0
+		&& dongle->waiters[0].coder == coder->id);
 }
 
-void	take_dongle(t_coders *coder, t_dongle *dongle)
+static void	queue_wait(t_coders *coder, t_dongle *dongle, long deadline,
+	bool *queued)
 {
+	t_waiter	waiter;
+
+	waiter.coder = coder->id;
+	waiter.arrival = get_time_ms();
+	if (coder->data->scheduler == EDF)
+		waiter.key = deadline;
+	else
+		waiter.key = waiter.arrival;
+	heap_push(dongle, &waiter);
+	*queued = true;
+}
+
+bool	take_dongle(t_coders *coder, t_dongle *dongle)
+{
+	bool	queued;
+	long	deadline;
+
+	pthread_mutex_lock(&coder->mutex);
+	deadline = coder->last_compile + coder->data->time_to_burnout;
+	pthread_mutex_unlock(&coder->mutex);
 	pthread_mutex_lock(&dongle->mutex);
-	while (!takeable(dongle, coder->data))
+	queued = false;
+	while (!wins_dongle(coder, dongle))
 	{
-		if (dongle->status == FREE)
+		if (should_stop(coder->data))
 		{
 			pthread_mutex_unlock(&dongle->mutex);
-			usleep((coder->data->dongle_cooldown
-					- (get_time_ms() - dongle->last_release)) * 1000);
-			pthread_mutex_lock(&dongle->mutex);
+			return (false);
 		}
-		else
-			pthread_cond_wait(&dongle->cond, &dongle->mutex);
+		if (!queued)
+			queue_wait(coder, dongle, deadline, &queued);
+		pthread_mutex_unlock(&dongle->mutex);
+		usleep(1000);
+		pthread_mutex_lock(&dongle->mutex);
 	}
+	heap_pop(dongle);
 	dongle->status = LOCK;
 	pthread_mutex_unlock(&dongle->mutex);
 	log_event(coder->data, get_time_ms(), coder->id, "has taken a dongle");
+	return true;
 }
 
 void	drop_dongle(t_dongle *dongle)
@@ -44,28 +71,4 @@ void	drop_dongle(t_dongle *dongle)
 	dongle->status = FREE;
 	dongle->last_release = get_time_ms();
 	pthread_mutex_unlock(&dongle->mutex);
-	pthread_cond_broadcast(&dongle->cond);
-}
-
-void	take_both(t_coders *coder)
-{
-	if (coder->left == coder->right)
-		take_dongle(coder, coder->left);
-	else if (coder->id % 2)
-	{
-		take_dongle(coder, coder->right);
-		take_dongle(coder, coder->left);
-	}
-	else
-	{
-		take_dongle(coder, coder->left);
-		take_dongle(coder, coder->right);
-	}
-}
-
-void	drop_both(t_coders *coder)
-{
-	drop_dongle(coder->left);
-	if (coder->right != coder->left)
-		drop_dongle(coder->right);
 }

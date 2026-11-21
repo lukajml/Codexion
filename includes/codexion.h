@@ -55,9 +55,15 @@ void	log_event(t_data *data, long ts, int id, const char *msg);
 void	*monitor_routine(void *arg);
 
 //dongle.c
-void	take_dongle(t_coders *coder, t_dongle *dongle);
+bool	take_dongle(t_coders *coder, t_dongle *dongle);
 void	drop_dongle(t_dongle *dongle);
-void	take_both(t_coders *coder);
+
+//scheduler.c
+void	heap_push(t_dongle *dongle, t_waiter *waiter);
+void	heap_pop(t_dongle *dongle);
+
+//pairs.c
+bool	take_both(t_coders *coder);
 void	drop_both(t_coders *coder);
 
 #endif

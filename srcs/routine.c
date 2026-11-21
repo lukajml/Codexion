@@ -39,6 +39,19 @@ static int	get_compiles(t_coders *coder)
 	return (done);
 }
 
+static void	post_compile(t_coders *coder)
+{
+	drop_both(coder);
+	if (should_stop(coder->data))
+		return ;
+	log_event(coder->data, get_time_ms(), coder->id, "is debugging");
+	usleep(coder->data->time_to_debug * 1000);
+	if (should_stop(coder->data))
+		return ;
+	log_event(coder->data, get_time_ms(), coder->id, "is refactoring");
+	usleep(coder->data->time_to_refactor * 1000);
+}
+
 void	*coder_routine(void *arg)
 {
 	t_coders	*coder;
@@ -51,7 +64,8 @@ void	*coder_routine(void *arg)
 	while (!should_stop(coder->data)
 		&& get_compiles(coder) < coder->data->nb_of_compiles)
 	{
-		take_both(coder);
+		if (!take_both(coder))
+			return (NULL);
 		timestamp = get_time_ms();
 		pthread_mutex_lock(&coder->mutex);
 		coder->last_compile = timestamp;
@@ -59,11 +73,7 @@ void	*coder_routine(void *arg)
 		pthread_mutex_unlock(&coder->mutex);
 		log_event(coder->data, timestamp, coder->id, "is compiling");
 		usleep(coder->data->time_to_compile * 1000);
-		drop_both(coder);
-		log_event(coder->data, get_time_ms(), coder->id, "is debugging");
-		usleep(coder->data->time_to_debug * 1000);
-		log_event(coder->data, get_time_ms(), coder->id, "is refactoring");
-		usleep(coder->data->time_to_refactor * 1000);
+		post_compile(coder);
 	}
 	return (NULL);
 }
