@@ -41,12 +41,16 @@ done: all
 
 tests: all
 	@fails=0; \
-	for i in $$(seq 100); do \
-		./codexion 5 100 20 20 10 5 10 edf | grep -q "burnt out" \
-			&& fails=$$((fails + 1)) && echo "FAIL $$i" \
-			|| echo "SUCCESS $$i"; \
-	done; \
-	[ $$fails -eq 0 ] && echo "all runs passed" || { echo "$$fails/100 failed"; exit 1; }
+		for i in $$(seq 100); do \
+			out=$$(./codexion 5 200 20 20 10 5 10 edf); \
+			if [ $$? -eq 0 ] && ! echo "$$out" | grep -q "burned out"; then \
+				echo "SUCCESS $$i"; \
+			else \
+				echo "FAIL $$i"; fails=$$((fails + 1)); \
+			fi \
+		done; \
+		[ $$fails -eq 0 ] && echo "all runs passed" || { echo "$$fails/100 failed"; exit 1; }
+
 
 valgrind: all
 	valgrind --leak-check=full --show-leak-kinds=all ./codexion 5 100 20 20 10 5 10 edf

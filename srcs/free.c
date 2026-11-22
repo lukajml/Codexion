@@ -22,7 +22,6 @@ void	free_dongle(t_data *data)
 	while (i < data->nb_coders)
 	{
 		pthread_mutex_destroy(&data->dongle[i].mutex);
-		pthread_cond_destroy(&data->dongle[i].cond);
 		free(data->dongle[i].waiters);
 		data->dongle[i].waiters = NULL;
 		i++;

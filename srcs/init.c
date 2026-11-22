@@ -46,7 +46,6 @@ void	init_dongle(t_data *data)
 	while (i < data->nb_coders)
 	{
 		pthread_mutex_init(&data->dongle[i].mutex, NULL);
-		pthread_cond_init(&data->dongle[i].cond, NULL);
 		data->dongle[i].last_release = 0;
 		data->dongle[i].status = FREE;
 		data->dongle[i].waiters = malloc(sizeof(t_waiter) * data->nb_coders);

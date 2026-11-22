@@ -37,7 +37,6 @@ typedef struct s_waiter
 typedef struct s_dongle
 {
 	pthread_mutex_t	mutex;
-	pthread_cond_t	cond;
 	long			last_release;
 	t_dongle_status	status;
 	t_waiter		*waiters;
