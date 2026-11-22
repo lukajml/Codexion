@@ -38,10 +38,12 @@ static void	sift(t_dongle *dongle, int i)
 	child = 2 * i + 1;
 	while (child < dongle->size)
 	{
-		if (child + 1 < dongle->size && sorts_first(&dongle->waiters[child + 1], &dongle->waiters[child]))
+		if (child + 1 < dongle->size
+			&& sorts_first(&dongle->waiters[child + 1],
+				&dongle->waiters[child]))
 			child++;
 		if (!sorts_first(&dongle->waiters[child], &dongle->waiters[i]))
-			break;
+			break ;
 		swp(&dongle->waiters[child], &dongle->waiters[i]);
 		i = child;
 		child = 2 * i + 1;

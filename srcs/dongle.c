@@ -20,11 +20,14 @@ static bool	wins_dongle(t_coders *coder, t_dongle *dongle)
 		&& dongle->waiters[0].coder == coder->id);
 }
 
-static void	queue_wait(t_coders *coder, t_dongle *dongle, long deadline,
-	bool *queued)
+static void	queue_wait(t_coders *coder, t_dongle *dongle)
 {
 	t_waiter	waiter;
+	long		deadline;
 
+	pthread_mutex_lock(&coder->mutex);
+	deadline = coder->last_compile + coder->data->time_to_burnout;
+	pthread_mutex_unlock(&coder->mutex);
 	waiter.coder = coder->id;
 	waiter.arrival = get_time_ms();
 	if (coder->data->scheduler == EDF)
@@ -32,19 +35,12 @@ static void	queue_wait(t_coders *coder, t_dongle *dongle, long deadline,
 	else
 		waiter.key = waiter.arrival;
 	heap_push(dongle, &waiter);
-	*queued = true;
 }
 
 bool	take_dongle(t_coders *coder, t_dongle *dongle)
 {
-	bool	queued;
-	long	deadline;
-
-	pthread_mutex_lock(&coder->mutex);
-	deadline = coder->last_compile + coder->data->time_to_burnout;
-	pthread_mutex_unlock(&coder->mutex);
 	pthread_mutex_lock(&dongle->mutex);
-	queued = false;
+	queue_wait(coder, dongle);
 	while (!wins_dongle(coder, dongle))
 	{
 		if (should_stop(coder->data))
@@ -52,8 +48,6 @@ bool	take_dongle(t_coders *coder, t_dongle *dongle)
 			pthread_mutex_unlock(&dongle->mutex);
 			return (false);
 		}
-		if (!queued)
-			queue_wait(coder, dongle, deadline, &queued);
 		pthread_mutex_unlock(&dongle->mutex);
 		usleep(1000);
 		pthread_mutex_lock(&dongle->mutex);
@@ -62,7 +56,7 @@ bool	take_dongle(t_coders *coder, t_dongle *dongle)
 	dongle->status = LOCK;
 	pthread_mutex_unlock(&dongle->mutex);
 	log_event(coder->data, get_time_ms(), coder->id, "has taken a dongle");
-	return true;
+	return (true);
 }
 
 void	drop_dongle(t_dongle *dongle)

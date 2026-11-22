@@ -33,6 +33,27 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
+burnout: all
+	./codexion 4 100 50 50 50 5 0 edf
+
+done: all
+	./codexion 4 1000 50 50 50 5 0 edf
+
+tests: all
+	@fails=0; \
+	for i in $$(seq 100); do \
+		./codexion 5 100 20 20 10 5 10 edf | grep -q "burnt out" \
+			&& fails=$$((fails + 1)) && echo "FAIL $$i" \
+			|| echo "SUCCESS $$i"; \
+	done; \
+	[ $$fails -eq 0 ] && echo "all runs passed" || { echo "$$fails/100 failed"; exit 1; }
+
+valgrind: all
+	valgrind --leak-check=full --show-leak-kinds=all ./codexion 5 100 20 20 10 5 10 edf
+
+helgrind: all
+	valgrind --tool=helgrind ./codexion 5 100 20 20 10 5 10 edf
+
 clean:
 	$(REMOVE) $(OBJ_DIR)
 
@@ -41,4 +62,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY = all clean fclean re
+.PHONY = all burnout done tests valgrind helgrind clean fclean re
