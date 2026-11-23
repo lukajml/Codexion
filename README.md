@@ -3,20 +3,20 @@
 # Description
 
 This activity teaches us how to use threads in C, as well as how to handle data races that comes with them.
-It is a new take on the 42 Philosophers project.
+It is a new version of the Philosophers problem.
 # Instructions
 
 To run the program, you first need to clone the repo with the url below :
 
 ```bash
-git clone <school_repo_url>
+git clone git@github.com:42learners/Common-Core---Codexion-2bc5c7aa-1d0f-4c02-94ee-5d9f16ff3e12.git
 ```
 
 Once cloned, with the help of the included makefile, you can build the project with the following makefile rules :
 
 | **Make rules** | **Descriptions**                                                                          |
 | -------------- | ----------------------------------------------------------------------------------------- |
-| make           | builds the project simply.                                                                |
+| make           | builds the project.                                                                       |
 | burnout        | builds the project and executes it with arguments that triggers a burnout.                |
 | done           | builds the project and executes it with arguments that runs the simulation to completion. |
 | tests          | builds the project and runs a sequence of 100 simulations with one set of arguments.      |
@@ -24,7 +24,7 @@ Once cloned, with the help of the included makefile, you can build the project w
 | helgrind       | builds the project and tests it for data races with helgrind.                             |
 | clean          | removes the object files.                                                                 |
 | fclean         | removes the object files and the executable for a clean tree.                             |
-| re             | runs the makefile rules *fclean* and *make*, for a clean version of the program.          |
+| re             | runs the makefile rules `fclean` and `make`, for a clean version of the program.          |
 
 You can also run the program manually after having it build with *make* :
 
@@ -51,6 +51,8 @@ For exemple :
 - To get a dongle, a coder unlocks, sleeps 1 ms with `usleep`, and re-locks until it wins or the simulation stops. This simple poll re-checks all three things it might be waiting for (a drop, the cooldown, the stop flag), which a condvar could not do reliably — a waiter blocked only by the cooldown would sleep forever.
 
 # Resources
+> [!NOTE]
+**No AI was used for this project**
 
 Several links that helped me on this journey :
 
@@ -58,7 +60,6 @@ https://embeddedprep.com/pthreads-tutorial/
 https://medium.com/@ruinadd/philosophers-42-guide-the-dining-philosophers-problem-893a24bc0fe2  
 https://my-portfolio-lilac-three-li2p7umtsx.vercel.app/work/codexion
 https://perso.ens-lyon.fr/francois.schwarzentruber/teaching/l3-prog/book/c_thread.html
-
 
 My dear friends who also helped me on this project :
 
