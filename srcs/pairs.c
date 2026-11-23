@@ -15,7 +15,11 @@
 bool	take_both(t_coders *coder)
 {
 	if (coder->left == coder->right)
-		return (take_dongle(coder, coder->left));
+	{
+		while (!should_stop(coder->data))
+			usleep(1000);
+		return (false);
+	}
 	if (coder->id % 2)
 	{
 		if (!take_dongle(coder, coder->right))
